@@ -5,7 +5,7 @@
 library(osmdata)
 library(ggplot2)
 library(ggmap)
-library('rprojroot')
+library(rprojroot)
 proj_root <- find_root(is_rstudio_project)
 
 # Davidson County, Nashville boundary

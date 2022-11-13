@@ -2,11 +2,11 @@
 # The function takes the ACS data table (acs_indicator_info) and its 
 # variable to download from the ACS
 
-library('dplyr')
-library('tidyverse')
-library('tidycensus')
-library('sf')
-library('rprojroot')
+library(dplyr)
+library(tidyverse)
+library(tidycensus)
+library(sf)
+library(rprojroot)
 proj_root <- find_root(is_rstudio_project)
 
 #vars2018 <- load_variables(2018, "acs5", cache = TRUE)

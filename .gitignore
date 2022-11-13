@@ -3,3 +3,9 @@
 .RData
 .Ruserdata
 *.rds
+*.img
+*.pdf
+*.dbf
+*.prj
+*.shp
+*.shx
