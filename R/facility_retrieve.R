@@ -11,6 +11,7 @@ proj_root <- find_root(is_rstudio_project)
 # Davidson County, Nashville boundary
 nash_bb <- getbb("Nashville")
 
+# function to download facility objects of interest
 facility_retrieve <- function(nash_bb, key, value){
   df <- nash_bb %>%
     opq() %>%
@@ -18,6 +19,7 @@ facility_retrieve <- function(nash_bb, key, value){
     osmdata_sf()
 }
 
+# name vector of facility objects of interest
 name <- c('cathedral', 'chapel', 'monstery', 'mosque', 'religion', 'temple', 'church', 'charity', 'recreation',
           'pub', 'monument', 'stadium', 'cafe', 'restaurant', 'fire_station', 'grocery_alcohol', 'grocery_bakery', 
           'grocery_beverages', 'grocery_butcher', 'grocery_cheese', 'grocery_chocolate', 'grocery_coffee', 
@@ -28,6 +30,7 @@ name <- c('cathedral', 'chapel', 'monstery', 'mosque', 'religion', 'temple', 'ch
           'healthcare_nursing_home','healthcare_veterinary', 'hospital', 'college', 'kindergarten', 'library',
           'school', 'university', 'bank', 'bus_stop', 'green', 'barber')
 
+# key vector of facility objects of interest
 key <- c('building', "building", "building", 'building', 'building', 'building', 'building', 'shop', 'leisure',
          'amenity', 'historic', 'building', 'amenity', 'amenity', 'building', 'shop', 'shop', 'shop', 'shop',
          'shop', 'shop', 'shop', 'shop', 'shop', 'shop', 'shop', 'shop', 'shop', 
@@ -36,6 +39,7 @@ key <- c('building', "building", "building", 'building', 'building', 'building',
          'amenity', 'amenity', 'amenity', 'amenity', 'amenity', 'amenity', 'amenity', 'amenity', 'amenity', 'amenity',
          'amenity', 'amenity', 'highway', 'landuse', 'shop')
 
+# value vector of facility objects of interest
 value <- c('cathedral', 'chapel', "monastery", "mosque", 'religious', 'temple', 'church', 'charity', 'fitness_centre',
            'bar', 'monument', 'stadium', 'cafe', 'restaurant', 'fire_station', 'alcohol', 'bakery', 'beverages', 'butcher',
            'cheese', 'chocolate', 'coffee', 'confectionery', 'convenience', 'deli', 'dairy', 'farm', 'frozen_food',
@@ -44,6 +48,7 @@ value <- c('cathedral', 'chapel', "monastery", "mosque", 'religious', 'temple', 
            'hospital', 'college', 'kindergarten', 'library', 'school', 'university', 'bank', 'bus_stop', 'recreation_ground',
            'hairdresser')
 
+# facility indicators information data frame
 facility_indicator_info <- data.frame(name = name, key = key, value = value)
 
 # function to download data from OSM 
@@ -59,7 +64,11 @@ for(i in 1:nrow(info_df)) {
 }
 
 facility_df <- facility_download(facility_indicator_info)
+
+#save facility indicators data frame list
 #saveRDS(facility_df, file = (paste0(proj_root, "/data/src/facility_df.rds")))
+
+--------------------------------------------------------------------------------
 # retrieving map of lagos
 # nash_map <- get_map(nash_bb, maptype = "roadmap")
 # 

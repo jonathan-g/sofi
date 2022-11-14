@@ -5,8 +5,10 @@ library(rprojroot)
 
 proj_root <- find_root(is_rstudio_project)
 
+# read in facility indicators data frame list
 facility_df <- readRDS(paste0(proj_root, '/data/src/facility_df.rds'))
 
+# function to count the number of each type of facility for each census tract
 facility_count <- function(df, census_tract, type = 'point'){
   if(nrow(df) == 0||is.null(df)){
     df <- census_tract %>%
@@ -23,8 +25,8 @@ facility_count <- function(df, census_tract, type = 'point'){
   }
 }
 
+# create a list of the number of facility of interest for each census tract data frame
 facility <- list()
-
 for(i in (1:length(facility_df))){
   name <- names(facility_df)[[i]]
   
@@ -42,5 +44,7 @@ for(i in (1:length(facility_df))){
   
   facility[[name]] <- df
 }
+
+# save the list file of the number of facility of interest for each census tract data frame
 #saveRDS(facility, file = (paste0(proj_root, "/data/gen/facility.rds")))
 
