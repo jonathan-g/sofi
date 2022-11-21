@@ -222,60 +222,64 @@ rank_process <- function(sofi_score){
 
 # social fabric score/rank calculation function
 sofi_rank_calculation <- function(input, 
-                                  indicator_transformation = c("1", "2"), 
-                                  indicator_normalization = c("3", "4", "5"), 
-                                  pca_selection =  c("6", "7", "8"), 
-                                  pca_rotation = c("9", "10", "11", "12", "13", "14"), 
-                                  weight_scheme = c("15", "16", "17")){
+                                  indicator_transformation = c("1", "2", "3"), 
+                                  indicator_normalization = c("4", "5", "6"), 
+                                  pca_selection =  c("7", "8", "9"), 
+                                  pca_rotation = c("10", "11", "12", "13", "14", "15"), 
+                                  weight_scheme = c("16", "17", "18")){
   if(indicator_transformation == 1) {
     indicator_transformed <- no_transformation(input)
   }else if (indicator_transformation == 2) {
     indicator_transformed <- area_transformation(input)
+  }else if (indicator_transformation == 3) {
+    indicator_transformed <- population_transformation(input)
   }
   
-  if(indicator_normalization == 3){
+  if(indicator_normalization == 4){
     indicator_normalized <- no_normalization(indicator_transformed)
-  }else if(indicator_normalization == 4){
-    indicator_normalized <- z_normalization(indicator_transformed)
   }else if(indicator_normalization == 5){
+    indicator_normalized <- z_normalization(indicator_transformed)
+  }else if(indicator_normalization == 6){
     indicator_normalized <- min_max_normalization(indicator_transformed)
   }
   
   pca <- pca_process(indicator_normalized) 
   
-  if(pca_selection == 6){
+  if(pca_selection == 7){
     pca_selected <- Kaiser_selection(pca)
-  }else if(pca_selection == 7){
-    pca_selected <- variances_explained_selection(pca)
   }else if(pca_selection == 8){
+    pca_selected <- variances_explained_selection(pca)
+  }else if(pca_selection == 9){
     pca_selected <- horn_parallel_selection(pca)
   }
   
-  if(pca_rotation == 9){
+  if(pca_rotation == 10){
     pca_rotated <- unrotate(pca_selected)
-  }else if(pca_rotation == 10){
-    pca_rotated <- varimax_process(pca_selected)
   }else if(pca_rotation == 11){
-    pca_rotated <- quartimax_process(pca_selected)
+    pca_rotated <- varimax_process(pca_selected)
   }else if(pca_rotation == 12){
-    pca_rotated <- promax_2(pca_selected)
+    pca_rotated <- quartimax_process(pca_selected)
   }else if(pca_rotation == 13){
-    pca_rotated <- promax_3(pca_selected)
+    pca_rotated <- promax_2(pca_selected)
   }else if(pca_rotation == 14){
+    pca_rotated <- promax_3(pca_selected)
+  }else if(pca_rotation == 15){
     pca_rotated <- promax_4(pca_selected)
   }
   
   pca_cardinal_assigned <- cardinal_assign(pca_rotated)
   
-  if(weight_scheme == 15){
+  if(weight_scheme == 16){
     sofi_score <- equal_sum(pca_cardinal_assigned)
-  }else if(weight_scheme == 16){
+  }else if(weight_scheme == 17){
     sofi_score <- first_component(pca_cardinal_assigned)
-  }else if(weight_scheme == 17)
+  }else if(weight_scheme == 18)
     sofi_score <- weighted_sum(pca_cardinal_assigned)
   
   sofi_rank <- rank_process(sofi_score)
   
   results = list(sofi_score = sofi_score, sofi_rank = sofi_rank)
+  
+  return(results)
 }
 
