@@ -3,6 +3,7 @@
 
 library(dplyr)
 library(rprojroot)
+library(sf)
 
 proj_root <- find_root(is_rstudio_project)
 
@@ -39,9 +40,12 @@ sofi_indicators_df <- sofi_indicators_df %>%
   mutate(healthcare = across(starts_with("healthcare")) %>% rowSums) %>% 
   mutate(grocery = across(starts_with("grocery")) %>% rowSums) %>%
   mutate(limt_edu = across(starts_with("limt_edu")) %>% rowSums) %>%
-  dplyr::select(-contains(c("healthcare_", "limt_edu_", "grocery_"))) %>%
+  mutate(multi_fam = across(starts_with("multi_fam")) %>% rowSums) %>%
+  dplyr::select(-contains(c("healthcare_", "limt_edu_", "grocery_", "multi_fam_"))) %>%
+  st_as_sf() %>%
+  mutate(area = st_area(.)) %>%
   relocate('NAME', .after = 'GEOID') %>%
-  relocate('geometry', .after = 'limt_edu')
+  relocate('geometry', .after = 'multi_fam')
 
 # save the final sofi indicators data frame
 #saveRDS(sofi_indicators_df, file = (paste0(proj_root, "/data/gen/sofi_indicators_df.rds")))
