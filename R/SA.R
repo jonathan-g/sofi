@@ -92,4 +92,27 @@ mean_Ti_calc <- function(y, N, params){
   mean_Ti <- list(mean_Ti_score = ind_score_results_df, mean_Ti_rank = ind_rank_results_df)
 }
 
-
+# function to determine the dominant input function
+dominate_input_determination <- function(y, N, params){
+  y_score <- y$score
+  y_rank <- y$rank
+  
+  dominate_input_score_df <- matrix(nrow = 1, ncol = ncol(y_score))
+  colnames(dominate_input_score_df) <- colnames(y_score)
+  
+  dominate_input_rank_df <- matrix(nrow = 1, ncol = ncol(y_rank))
+  colnames(dominate_input_rank_df) <- colnames(y_rank)
+  
+  for (i in 1:ncol(y_score)) {
+    sobol_ind_score  <- sobol_indices(Y = y_score[,i], N = N, params = params)
+    sobol_ind_score_df <- sobol_ind_score$results
+    dominate_input_score <- sobol_ind_score_df$parameters[sobol_ind_score_df$original == max(sobol_ind_score_df$original[sobol_ind_score_df$sensitivity == "Si"])&sobol_ind_score_df$sensitivity == "Si"]
+    dominate_input_score_df[1,i] <- dominate_input_score
+    
+    sobol_ind_rank  <- sobol_indices(Y = y_rank[,i], N = N, params = params)
+    sobol_ind_rank_df <- sobol_ind_rank$results
+    dominate_input_rank <- sobol_ind_rank_df$parameters[sobol_ind_rank_df$original == max(sobol_ind_rank_df$original[sobol_ind_rank_df$sensitivity == "Si"])&sobol_ind_rank_df$sensitivity == "Si"]
+    dominate_input_rank_df[1,i] <- dominate_input_rank
+  }
+  dominate_input_fcts <- list(dominate_input_score = dominate_input_score_df, dominate_input_rank = dominate_input_rank_df)
+}
