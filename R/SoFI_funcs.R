@@ -221,12 +221,12 @@ rank_process <- function(sofi_score){
 
 
 # social fabric score/rank calculation function
-sofi_rank_calculation <- function(input, 
-                                  indicator_transformation = c("1", "2", "3"), 
-                                  indicator_normalization = c("4", "5", "6"), 
-                                  pca_selection =  c("7", "8", "9"), 
-                                  pca_rotation = c("10", "11", "12", "13", "14", "15"), 
-                                  weight_scheme = c("16", "17", "18")){
+sofi_calc <- function(input, 
+                      indicator_transformation = c("1", "2", "3"), 
+                      indicator_normalization = c("4", "5", "6"), 
+                      pca_selection =  c("7", "8", "9"), 
+                      pca_rotation = c("10", "11", "12", "13", "14", "15"), 
+                      weight_scheme = c("16", "17", "18")){
   if(indicator_transformation == 1) {
     indicator_transformed <- no_transformation(input)
   }else if (indicator_transformation == 2) {

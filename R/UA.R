@@ -32,9 +32,9 @@ sample_calc <- function(input, sample_number) {
     pca_rotation <- sample(pca_rotation_option, size = 1)
     weight_scheme <- sample(weight_scheme_option , size = 1)
     
-    sfi <- sf_rank_calculation(input, indicator_transformation, indicator_normalization, pca_selection, pca_rotation,  weight_scheme)
+    sofi <- sofi_calc(input, indicator_transformation, indicator_normalization, pca_selection, pca_rotation,  weight_scheme)
     
-    sample_results <- append(sample_results, list(sfi))
+    sample_results <- append(sample_results, list(sofi))
     indicator_transformation_list <- append(indicator_transformation_list, indicator_transformation)
     indicator_normalization_list <- append(indicator_normalization_list, indicator_normalization)
     pca_selection_list <- append(pca_selection_list, pca_selection)
@@ -50,4 +50,4 @@ sample_calc <- function(input, sample_number) {
 }
 
 UA_samples <- sample_calc(variable, 300)
-saveRDS(UA_samples, file = (paste0(proj_root, "/data/gen/UA_samples.rds")))
+#saveRDS(UA_samples, file = (paste0(proj_root, "/data/gen/UA_samples.rds")))
