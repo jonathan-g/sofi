@@ -51,3 +51,56 @@ sample_calc <- function(input, sample_number) {
 
 UA_samples <- sample_calc(variable, 300)
 #saveRDS(UA_samples, file = (paste0(proj_root, "/data/gen/UA_samples.rds")))
+
+# create UA sample results data frame
+samples_df <- UA_samples$samples$sample_results[[1]]$sofi_rank %>% dplyr::select('NAME')
+for (i in 1:length(samples$sample_results)) {
+  samples_df <- samples_df %>%
+    left_join(samples$sample_results[[i]]$sofi_rank %>% 
+                dplyr::select('NAME','rank') %>% 
+                dplyr::rename(!!paste('rank', i) := rank) %>% st_drop_geometry(), by = 'NAME')
+}
+
+# Confidence Interval (CI)
+CI <- as.data.frame(apply(as.matrix(samples_df %>% dplyr::select(-'NAME') %>% st_drop_geometry()), 1, function(x) CI(x)) %>%
+                      t(.)) %>% 
+  cbind(samples_df %>% dplyr::select('NAME')) %>%
+  mutate(interval = upper - lower)
+
+# Median
+Median <- as.data.frame(apply(as.matrix(samples_df %>% dplyr::select(-'NAME') %>% st_drop_geometry()), 1, function(x) median(x))) 
+colnames(Median) <- 'Median'
+Median <- Median %>%
+  cbind(samples_df %>% dplyr::select('NAME'))
+
+# Coefficient of Variation (CV)
+CV <- as.data.frame(apply(as.matrix(samples_df %>% dplyr::select(-'NAME') %>% st_drop_geometry()), 1, function(x) cv(x)))
+colnames(CV) <- 'CV'
+CV <- CV %>%
+  cbind(samples_df %>% dplyr::select('NAME'))
+
+# Mode
+getmode <- function(x) {
+  uniqv <- unique(x)
+  uniqv[which.max(tabulate(match(x, uniqv)))]
+}
+
+Mode <- as.data.frame(apply(as.matrix(samples_df %>% dplyr::select(-'NAME') %>% st_drop_geometry()), 1, function(x) getmode(x))) 
+colnames(Mode) <- 'Mode'
+Mode <- Mode %>%
+  cbind(samples_df %>% dplyr::select('NAME'))
+
+# Mean rank
+Mean <- as.data.frame(apply(as.matrix(samples_df %>% dplyr::select(-'NAME') %>% st_drop_geometry()), 1, function(x) mean(x))) 
+colnames(Mean) <- 'Mean'
+Mean <- Mean %>%
+  cbind(samples_df %>% dplyr::select('NAME'))
+
+# Generate Uncertainty Results Data frame
+UA_df <- CI %>% 
+  left_join(Median %>% dplyr::select ('NAME', 'Median'), by = 'NAME') %>%
+  left_join(CV %>% dplyr::select ('NAME', 'CV') , by = 'NAME') %>%
+  left_join(Mode %>% dplyr::select ('NAME', 'Mode'), by = 'NAME') %>%
+  left_join(Mean %>% dplyr::select ('NAME', 'Mean'), by = 'NAME')
+
+saveRDS(UA_df, file = (paste0(proj_root, "/data/gen/UA_df.rds")))

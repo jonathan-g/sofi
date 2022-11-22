@@ -69,8 +69,11 @@ min_max_normalization <- function(indicator_transformed) {
 
 # PCA conduction/analysis func-----------------------------------
 pca_process <- function(indicator_normalized) {
-  pca <-  prcomp(indicator_normalized %>% dplyr::select(-"NAME", -"area") %>% 
-                   st_drop_geometry(), center = TRUE, scale. = TRUE)  
+  pca <-  prcomp(indicator_normalized %>% 
+                   dplyr::select(-"NAME", -"area") %>% 
+                   replace(is.na(.),0) %>% 
+                   st_drop_geometry() %>%
+                   dplyr::select(where(~sum(.) != 0)), acenter = TRUE, scale. = TRUE)  
   CT_tab <- indicator_normalized %>% 
     dplyr::select('NAME', 'area')
   indicator_normalized <- indicator_normalized

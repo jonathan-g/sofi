@@ -116,3 +116,34 @@ dominate_input_determination <- function(y, N, params){
   }
   dominate_input_fcts <- list(dominate_input_score = dominate_input_score_df, dominate_input_rank = dominate_input_rank_df)
 }
+
+# Dominate input factors mapping function (map dominant input fcts to each census tract)
+dominate_input_map <- function(dominate_input_fcts, input){
+  dominate_input_rank <- dominate_input_fcts$dominate_input_rank
+  dominate_input_score <- dominate_input_fcts$dominate_input_score
+  
+  dominate_input_score_df <- as.data.frame(dominate_input_score) %>%
+    pivot_longer(everything(), names_to = 'NAME', values_to = 'dominate_input_fcts') %>%
+    left_join(input %>% dplyr::select('NAME'), by = "NAME")
+  
+  dominate_input_rank_df   <- as.data.frame(dominate_input_rank) %>%
+    pivot_longer(everything(), names_to = 'NAME', values_to = 'dominate_input_fcts') %>%
+    left_join(input %>% dplyr::select('NAME'), by = "NAME")
+  
+  dominate_input_df <- list(dominate_input_score_df = dominate_input_score_df, dominate_input_rank_df = dominate_input_rank_df)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
