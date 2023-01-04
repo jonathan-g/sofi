@@ -12,6 +12,7 @@ library(rprojroot)
 proj_root <- find_root(is_rstudio_project)
 
 source(paste0(proj_root, "/R/SoFI_funcs.R"))
+variable <- readRDS(paste0(proj_root, '/data/gen/variable.rds'))
 
 # calculate the baseline scenario SoFI
 # indicator transformation: averaged by area, "2"

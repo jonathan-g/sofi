@@ -8,10 +8,10 @@ library(stringr)
 library(BBmisc)
 library(paran)
 library(rprojroot)
-
+proj_root <- find_root(is_rstudio_project)
 #-------------------read in input data--------------------------------
-variable <- readRDS(file.path(proj_root, "data", '/gen/sofi_indicators_df.rds')) %>%
-  dplyr::select(-GEOID)
+# variable <- readRDS(file.path(proj_root, "data", '/gen/sofi_indicators_df.rds')) %>%
+#   dplyr::select(-GEOID)
 
 # Transformation func-------------------------------------------
 no_transformation <- function(variable){
@@ -20,7 +20,7 @@ no_transformation <- function(variable){
 
 area_transformation <- function(variable) {
   for (i in 1:ncol(variable)) {
-    if (!colnames(variable[,i])[1] %in% c('NAME', "area", "geometry")) {
+    if (!colnames(variable[,i])[1] %in% c('NAME', "area", 'GEOID', "geometry")) {
       variable[,i] <- variable[,i] %>% 
         st_drop_geometry()/as.numeric(variable$area * 3.86102e-7)
     }
@@ -31,7 +31,7 @@ area_transformation <- function(variable) {
 population_transformation <- function(variable) {
   variable$pop[variable$pop == 0] <- sum(variable$pop) 
   for (i in 1:ncol(variable)) {
-    if (!colnames(variable[,i])[1] %in% c('NAME', "area", "geometry")) {
+    if (!colnames(variable[,i])[1] %in% c('NAME', 'GEOID',"area", "geometry")) {
       variable[,i] <- variable[,i]/as.numeric(variable$pop)
     }
   }
@@ -46,7 +46,7 @@ no_normalization <- function(indicator_transformed) {
 
 z_normalization <- function(indicator_transformed) {
   for (i in 1:ncol(indicator_transformed)) {
-    if (!colnames(indicator_transformed[, i])[1] %in% c('NAME', "area", "geometry")) {
+    if (!colnames(indicator_transformed[, i])[1] %in% c('NAME', 'GEOID', "area", "geometry")) {
       indicator_transformed [, i] <- normalize(indicator_transformed[,i] %>% 
                                                  st_drop_geometry(), method = "standardize", range = c(0, 1), margin = 2L, on.constant = "quiet")
     }
@@ -56,7 +56,7 @@ z_normalization <- function(indicator_transformed) {
 
 min_max_normalization <- function(indicator_transformed) {
   for (i in 1:ncol(indicator_transformed)) {
-    if (!colnames(indicator_transformed[, i])[1] %in% c('NAME', "area", "geometry")) {
+    if (!colnames(indicator_transformed[, i])[1] %in% c('NAME', 'GEOID', "area", "geometry")) {
       indicator_transformed[, i] <- (indicator_transformed[,i] %>% 
                                        st_drop_geometry() - min(indicator_transformed[,i] %>% 
                                                                   st_drop_geometry()))/(max(indicator_transformed[,i] %>%
@@ -70,10 +70,10 @@ min_max_normalization <- function(indicator_transformed) {
 # PCA conduction/analysis func-----------------------------------
 pca_process <- function(indicator_normalized) {
   pca <-  prcomp(indicator_normalized %>% 
-                   dplyr::select(-"NAME", -"area") %>% 
+                   dplyr::select(-"NAME", -"area", -"GEOID") %>% 
                    replace(is.na(.),0) %>% 
                    st_drop_geometry() %>%
-                   dplyr::select(where(~sum(.) != 0)), acenter = TRUE, scale. = TRUE)  
+                   dplyr::select(where(~sum(.) != 0)), scale. = TRUE)  
   CT_tab <- indicator_normalized %>% 
     dplyr::select('NAME', 'area')
   indicator_normalized <- indicator_normalized
@@ -105,7 +105,7 @@ variances_explained_selection <- function(pca){
 }
 
 horn_parallel_selection <- function(pca){
-  parallel_pca <- paran(pca$indicator_normalized %>% dplyr::select(-"NAME", -"area") %>% st_drop_geometry(), iterations=5000)
+  parallel_pca <- paran(pca$indicator_normalized %>% dplyr::select(-"NAME", -"area", -'GEOID') %>% st_drop_geometry(), iterations=5000)
   
   pca.var <- pca$pca$sdev ^ 2
   pca.pvar <- pca.var/sum(pca.var)
@@ -168,9 +168,13 @@ promax_4 <- function(pca_selected){
 
 # Cardinal assignment process func-----------------------------------
 cardinal_assign <- function(pca_rotated){
-  if (class(pca_rotated$pca_rotated_rotation) == 'loadings'){
-    pca_rotated_rotation <- data.frame(matrix(as.numeric(pca_rotated$pca_rotated_rotation), attributes(pca_rotated$pca_rotated_rotation)$dim, dimnames=attributes(pca_rotated$pca_rotated_rotation)$dimnames))
-  }else {
+  if(class(pca_rotated$pca_rotated_rotation)[1] == "matrix"){
+    pca_rotated_rotation <- pca_rotated$pca_rotated_rotation
+  } else if (class(pca_rotated$pca_rotated_rotation) == 'loadings'){
+    pca_rotated_rotation <- data.frame(matrix(as.numeric(pca_rotated$pca_rotated_rotation), 
+                                              attributes(pca_rotated$pca_rotated_rotation)$dim, 
+                                              dimnames=attributes(pca_rotated$pca_rotated_rotation)$dimnames))
+  } else {
     pca_rotated_rotation <- pca_rotated$pca_rotated_rotation
   }
   
@@ -178,13 +182,13 @@ cardinal_assign <- function(pca_rotated){
   
   for (i in 1:ncol(pca_rotated_rotation)) {
     dominant_variable <- rownames(pca_rotated_rotation)[which.max(abs(pca_rotated_rotation[,i]))]
-    if (str_detect(dominant_variable, "single_person_hshd|single_parent_family|poverty|unemployment|limt_english|crime|limt_edu")){
+    if (str_detect(dominant_variable, "single_person_hshd|single_parent_family|poverty|unemployment|limt_english|crime|limt_edu|gender_equity|ethnic_equity")){
       if (pca_rotated_rotation[dominant_variable, i] > 0) {
         pca_rotated$pca_df_selected[, i] <- pca_rotated$pca_df_selected[, i] * (-1)
       }
     }
     
-    else if (!str_detect(dominant_variable, "single_person_hshd|single_parent_family|poverty|unemployment|limt_english|crime|limt_edu")){
+    else if (!str_detect(dominant_variable, "single_person_hshd|single_parent_family|poverty|unemployment|limt_english|crime|limt_edu|gender_equity|ethnic_equity")){
       if (pca_rotated_rotation[dominant_variable, i] < 0) {
         pca_rotated$pca_df_selected[, i] <- pca_rotated$pca_df_selected[, i] * (-1)
       }

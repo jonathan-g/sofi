@@ -43,9 +43,22 @@ sofi_indicators_df <- sofi_indicators_df %>%
   mutate(multi_fam = across(starts_with("multi_fam")) %>% rowSums) %>%
   dplyr::select(-contains(c("healthcare_", "limt_edu_", "grocery_", "multi_fam_"))) %>%
   st_as_sf() %>%
-  mutate(area = st_area(.)) %>%
+  mutate(area = st_area(.)) 
+
+# create a column for gender equity
+sofi_indicators_df$gender_equity <- apply(sofi_indicators_df[, c("female_pop","male_pop")] %>% 
+                                            st_drop_geometry, 1, sd)
+
+# create a column for ethnic equity
+sofi_indicators_df$ethnic_equity <- apply(sofi_indicators_df[, c("white","hispanic","black",
+                                                                 "asian")] %>% 
+                                            st_drop_geometry, 1, sd)
+
+# remove original gender and ethnic variables
+sofi_indicators_df <- sofi_indicators_df %>%
+  dplyr::select(-"female_pop", -"male_pop", -"white", -"hispanic", -"black", -"asian") %>%
   relocate('NAME', .after = 'GEOID') %>%
-  relocate('geometry', .after = 'multi_fam')
+  relocate('geometry', .after = 'ethnic_equity')
 
 # save the final sofi indicators data frame
 #saveRDS(sofi_indicators_df, file = (paste0(proj_root, "/data/gen/sofi_indicators_df.rds")))

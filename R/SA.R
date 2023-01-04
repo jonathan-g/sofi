@@ -11,8 +11,11 @@ library(rprojroot)
 library(sensobol)
 library(data.table)
 library(ggplot2)
+library(rprojroot)
+
 proj_root <- find_root(is_rstudio_project)
 
+source(paste0(proj_root, "/R/baseline.R"))
 source(paste0(proj_root, "/R/SoFI_funcs.R"))
 
 N <- 2^9
@@ -53,8 +56,8 @@ sofi_sa_fun <- function(input, mat){
       dplyr::select('NAME', 'score', 'rank') %>% 
       st_drop_geometry()
     
-    score[i, ] <- as.vector(t(sovi_rank %>% dplyr::select('score')))
-    rank[i, ] <- as.vector(t(sovi_rank %>% dplyr::select('rank')))
+    score[i, ] <- as.vector(t(sofi_rank %>% dplyr::select('score')))
+    rank[i, ] <- as.vector(t(sofi_rank %>% dplyr::select('rank')))
   }
   y <- list(score = score, rank = rank)
   return(y)
@@ -62,6 +65,8 @@ sofi_sa_fun <- function(input, mat){
 
 # Calc the SA model output
 y <- sofi_sa_fun(input = variable, mat)
+
+#saveRDS(y, file = (paste0(proj_root, "/data/gen/SA_results.rds")))
 
 # Mean Total order SA index calculation function
 mean_Ti_calc <- function(y, N, params){
@@ -92,6 +97,8 @@ mean_Ti_calc <- function(y, N, params){
   mean_Ti <- list(mean_Ti_score = ind_score_results_df, mean_Ti_rank = ind_rank_results_df)
 }
 
+#mean_Ti <- mean_Ti_calc(y, N, params)
+
 # function to determine the dominant input function
 dominate_input_determination <- function(y, N, params){
   y_score <- y$score
@@ -117,6 +124,8 @@ dominate_input_determination <- function(y, N, params){
   dominate_input_fcts <- list(dominate_input_score = dominate_input_score_df, dominate_input_rank = dominate_input_rank_df)
 }
 
+#dominate_input_fcts <- dominate_input_determination(y, N, params)
+
 # Dominate input factors mapping function (map dominant input fcts to each census tract)
 dominate_input_map <- function(dominate_input_fcts, input){
   dominate_input_rank <- dominate_input_fcts$dominate_input_rank
@@ -133,17 +142,4 @@ dominate_input_map <- function(dominate_input_fcts, input){
   dominate_input_df <- list(dominate_input_score_df = dominate_input_score_df, dominate_input_rank_df = dominate_input_rank_df)
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#dominate_input_fcts_map <- dominate_input_map(dominate_input_fcts, input = variable)
