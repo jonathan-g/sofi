@@ -5,6 +5,7 @@
 #*.rds
 #*.img
 *.pdf
+*samples.rds
 #*.dbf
 #*.prj
 #*.shp
